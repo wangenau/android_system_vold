@@ -344,8 +344,15 @@ int VolumeManager::createAsec(const char *id, unsigned int numSectors, const cha
     /*
      * Add some headroom
      */
-    unsigned fatSize = (((numSectors * 4) / 512) + 1) * 2;
-    unsigned numImgSectors = numSectors + fatSize + 2;
+    unsigned numImgSectors;
+    if (usingExt4) {
+        // Add 6.25% for ext4 journaling, etc.
+        unsigned headRoom = ((numSectors + 15) / 16);
+        numImgSectors = numSectors + headRoom;
+    } else {
+        unsigned fatSize = (((numSectors * 4) / 512) + 1) * 2;
+        numImgSectors = numSectors + fatSize + 2;
+    }
 
     if (numImgSectors % 63) {
         numImgSectors += (63 - (numImgSectors % 63));
